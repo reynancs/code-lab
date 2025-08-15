@@ -15,6 +15,19 @@ function Write-ColorOutput($ForegroundColor) {
 # Display welcome message
 Write-ColorOutput Green "Starting submodule setup process..."
 
+# Clean up existing submodule configurations
+if (Test-Path ".gitmodules") {
+    Write-ColorOutput Yellow "Removing existing .gitmodules file..."
+    Remove-Item -Force ".gitmodules"
+}
+
+# Clean up submodule sections from git config
+Write-ColorOutput Yellow "Cleaning up git config..."
+git config --file=.git/config --remove-section submodule 2>$null
+foreach ($dir in $directories) {
+    git config --file=.git/config --remove-section "submodule.$dir" 2>$null
+}
+
 # Remove existing directories if they exist
 $directories = @(
     "API/webhooks_fastapi",
@@ -62,7 +75,24 @@ $submodules = @(
 # Add each submodule
 foreach ($submodule in $submodules) {
     Write-ColorOutput Cyan "Adding submodule: $($submodule.path)"
+    
+    # Remove .git directory if it exists
+    $gitDir = Join-Path $submodule.path ".git"
+    if (Test-Path $gitDir) {
+        Write-ColorOutput Yellow "Removing existing .git directory in: $($submodule.path)"
+        Remove-Item -Recurse -Force $gitDir
+    }
+    
+    # Try to add the submodule
     git submodule add $submodule.repo $submodule.path
+    
+    if ($LASTEXITCODE -ne 0) {
+        Write-ColorOutput Red "Failed to add submodule: $($submodule.path)"
+        Write-ColorOutput Yellow "Trying to reinitialize..."
+        git submodule deinit -f $submodule.path
+        git rm -f $submodule.path
+        git submodule add $submodule.repo $submodule.path
+    }
 }
 
 # Git operations
