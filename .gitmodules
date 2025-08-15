@@ -1,0 +1,15 @@
+[submodule "API/webhooks_fastapi"]
+	path = API/webhooks_fastapi
+	url = https://github.com/reynancs/webhooks_fastapi
+[submodule "devops/docker-conversao-temperatura"]
+	path = devops/docker-conversao-temperatura
+	url = https://github.com/reynancs/docker-conversao-temperatura
+[submodule "devops/kube-news"]
+	path = devops/kube-news
+	url = https://github.com/reynancs/kube-news
+[submodule "frameworks/cookie_cutter"]
+	path = frameworks/cookie_cutter
+	url = https://github.com/reynancs/cookie_cutter_framework
+[submodule "genai/genai_intensive_course_gemini"]
+	path = genai/genai_intensive_course_gemini
+	url = https://github.com/reynancs/genai_intensive_course_gemini
