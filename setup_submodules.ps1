@@ -15,17 +15,28 @@ function Write-ColorOutput($ForegroundColor) {
 # Display welcome message
 Write-ColorOutput Green "Starting submodule setup process..."
 
-# Clean up existing submodule configurations
+# Initialize clean state
+Write-ColorOutput Yellow "Initializing clean state..."
+
+# Deinitialize existing submodules
 if (Test-Path ".gitmodules") {
-    Write-ColorOutput Yellow "Removing existing .gitmodules file..."
-    Remove-Item -Force ".gitmodules"
+    Write-ColorOutput Yellow "Cleaning up existing submodules..."
+    git submodule deinit -f .
 }
 
-# Clean up submodule sections from git config
+# Remove submodule sections from git config
 Write-ColorOutput Yellow "Cleaning up git config..."
-git config --file=.git/config --remove-section submodule 2>$null
-foreach ($dir in $directories) {
-    git config --file=.git/config --remove-section "submodule.$dir" 2>$null
+if (Test-Path ".git/config") {
+    git config --file=.git/config --remove-section submodule 2>$null
+    foreach ($dir in $directories) {
+        git config --file=.git/config --remove-section "submodule.$dir" 2>$null
+    }
+}
+
+# Remove the .git/modules directory
+if (Test-Path ".git/modules") {
+    Write-ColorOutput Yellow "Removing .git/modules directory..."
+    Remove-Item -Recurse -Force ".git/modules"
 }
 
 # Remove existing directories if they exist
