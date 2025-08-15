@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Code-lab | Projetos Rápidos</title>
+  <style>
+    :root { --bg:#0b0f14; --card:#111823; --muted:#9fb0c0; --text:#e7f0f7; --accent:#38bdf8; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell; color:var(--text); background:linear-gradient(180deg, #0a0f14 0%, #0b1220 100%); }
+    header { padding:32px 20px; max-width:1100px; margin:0 auto; }
+    h1 { margin:0 0 8px; font-size:32px; }
+    p.lead { margin:0; color:var(--muted); }
+    .filters { display:grid; grid-template-columns: 1fr repeat(3, minmax(180px, 220px)); gap:12px; margin-top:18px; }
+    input, select { width:100%; padding:10px 12px; border-radius:12px; border:1px solid #233044; background:#0f1723; color:var(--text); outline:none; }
+    main { max-width:1100px; margin:24px auto 60px; padding:0 20px; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:16px; }
+    .card { background:radial-gradient(1200px 300px at 10% 10%, rgba(0,124,255,.15), transparent 70%), var(--card); border:1px solid #233044; border-radius:16px; padding:16px; display:flex; flex-direction:column; gap:10px; }
+    .title { font-weight:600; font-size:18px; line-height:1.2; }
+    .desc { color:var(--muted); font-size:14px; min-height:42px; }
+    .meta { display:flex; flex-wrap:wrap; gap:8px; }
+    .chip { font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid #2a3a4e; color:#cfe6ff; background:#0d1320; }
+    .actions { margin-top:auto; display:flex; gap:8px; }
+    .btn { text-decoration:none; padding:10px 12px; border-radius:12px; font-weight:600; font-size:14px; text-align:center; border:1px solid #2a3a4e; color:var(--text); background:#0e1522; }
+    .btn.primary { border-color:#2563eb; background:#0b1220; color:#dbeafe; }
+    footer { color:#6b7e95; text-align:center; padding:24px; border-top:1px solid #233044; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Code-lab</h1>
+    <p class="lead">Experimentos rápidos (30min–3h): testes técnicos, protótipos, snippets e provas de conceito.</p>
+
+    <!-- FILTROS -->
+    <div class="filters">
+      <input id="q" placeholder="BUSCA por título, descrição ou tags…" />
+      <select id="cat"><option value="">All Categories</option></select>
+      <select id="skill"><option value="">All Skills</option></select>
+      <select id="status">
+        <option value="">All Status</option>
+        <option>draft</option><option>done</option><option>revisit</option>
+      </select>
+    </div>
+  </header>
+
+  <main><div id="grid" class="grid"></div></main>
+  <footer>© <span id="year"></span> • Code-lab</footer>
+
+  <script>
+  // ======= 1) EDITE AQUI: cadastre seus experimentos =======
+  const DATA = [
+    {
+      id: "fft-vibration",
+      title: "FFT rápida em sinal de vibração",
+      description: "Sinal sintético + FFT para identificar frequência dominante.",
+      category: "signal-processing",
+      skill: "python",
+      tags: ["vibration","fft","timeseries"],
+      status: "done",
+      repo_url: "https://github.com/<user>/<repo>/tree/main/code-lab/signal-processing/fft_demo",
+      colab_url: "https://colab.research.google.com/github/<user>/<repo>/blob/main/code-lab/signal-processing/fft_demo/notebook.ipynb"
+    },
+    {
+      id: "zscore-detector",
+      title: "Detecção rápida por z-score",
+      description: "Protótipo de anomalias com janela móvel (baseline).",
+      category: "ml",
+      skill: "python",
+      tags: ["anomaly","zscore","baseline"],
+      status: "draft",
+      repo_url: "https://github.com/<user>/<repo>/tree/main/code-lab/ml/zscore_detector"
+    }
+    // Adicione novos itens aqui…
+  ];
+
+  // ======= 2) Catálogo (não precisa editar) =======
+  const $grid = document.getElementById("grid");
+  const $q = document.getElementById("q");
+  const $cat = document.getElementById("cat");
+  const $skill = document.getElementById("skill");
+  const $status = document.getElementById("status");
+
+  // Preenche selects dinamicamente
+  const cats = [...new Set(DATA.map(d => d.category))].filter(Boolean).sort();
+  const skills = [...new Set(DATA.map(d => d.skill))].filter(Boolean).sort();
+  cats.forEach(c => { const o=document.createElement("option"); o.value=c; o.textContent=c; $cat.appendChild(o); });
+  skills.forEach(s => { const o=document.createElement("option"); o.value=s; o.textContent=s; $skill.appendChild(o); });
+
+  function match(d, q, cat, skill, status) {
+    const text = (d.title + " " + d.description + " " + (d.tags||[]).join(" ")).toLowerCase();
+    const okQ = !q || text.includes(q.toLowerCase());
+    const okC = !cat || d.category === cat;
+    const okS = !skill || d.skill === skill;
+    const okT = !status || d.status === status;
+    return okQ && okC && okS && okT;
+  }
+  const chip = s => `<span class="chip">${s}</span>`;
+
+  function render() {
+    const q = $q.value.trim(), cat = $cat.value, skill = $skill.value, status = $status.value;
+    const items = DATA.filter(d => match(d, q, cat, skill, status));
+    $grid.innerHTML = items.map(d => `
+      <article class="card">
+        <div class="title">${d.title}</div>
+        <div class="desc">${d.description}</div>
+        <div class="meta">
+          ${d.category ? chip(d.category) : ""}${d.skill ? chip(d.skill) : ""}${d.status ? chip(d.status) : ""}
+          ${(d.tags||[]).slice(0,3).map(t => chip(t)).join("")}
+        </div>
+        <div class="actions">
+          <a class="btn primary" href="${d.repo_url}" target="_blank" rel="noopener">GitHub</a>
+          ${d.colab_url ? `<a class="btn" href="${d.colab_url}" target="_blank" rel="noopener">Abrir no Colab</a>` : ""}
+        </div>
+      </article>`).join("");
+  }
+  [$q,$cat,$skill,$status].forEach(el => el.addEventListener(el.tagName==='INPUT'?'input':'change', render));
+  render(); document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
